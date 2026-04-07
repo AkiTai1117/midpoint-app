@@ -25,12 +25,25 @@ const signNames = [
   "うお座"
 ];
 
+const STORAGE_KEY = "midpointAppFormData";
+
 const calculateButton = document.getElementById("calculateButton");
 const errorMessage = document.getElementById("errorMessage");
 
 const planetAResult = document.getElementById("planetAResult");
 const planetBResult = document.getElementById("planetBResult");
 const midpointResult = document.getElementById("midpointResult");
+
+const formElementIds = [
+  "planetA",
+  "signA",
+  "degreeA",
+  "minuteA",
+  "planetB",
+  "signB",
+  "degreeB",
+  "minuteB"
+];
 
 calculateButton.addEventListener("click", () => {
   clearError();
@@ -67,6 +80,11 @@ calculateButton.addEventListener("click", () => {
 
   midpointResult.textContent =
     `ミッドポイント：${midpointPosition.signName} ${midpointPosition.degree}度 ${pad2(midpointPosition.minute)}分`;
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  restoreFormData();
+  attachAutoSave();
 });
 
 function getPlanetInput(suffix) {
@@ -198,4 +216,46 @@ function clearResults() {
   planetAResult.textContent = "天体A：-";
   planetBResult.textContent = "天体B：-";
   midpointResult.textContent = "ミッドポイント：-";
+}
+
+function attachAutoSave() {
+  formElementIds.forEach((id) => {
+    const element = document.getElementById(id);
+    if (!element) return;
+
+    element.addEventListener("input", saveFormData);
+    element.addEventListener("change", saveFormData);
+  });
+}
+
+function saveFormData() {
+  const formData = {};
+
+  formElementIds.forEach((id) => {
+    const element = document.getElementById(id);
+    if (!element) return;
+    formData[id] = element.value;
+  });
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+}
+
+function restoreFormData() {
+  const savedData = localStorage.getItem(STORAGE_KEY);
+  if (!savedData) return;
+
+  try {
+    const formData = JSON.parse(savedData);
+
+    formElementIds.forEach((id) => {
+      const element = document.getElementById(id);
+      if (!element) return;
+
+      if (typeof formData[id] === "string") {
+        element.value = formData[id];
+      }
+    });
+  } catch (error) {
+    console.error("保存データの復元に失敗しました:", error);
+  }
 }
