@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ミッドポイント計算アプリ</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>ミッドポイント計算アプリ</h1>
+    <p class="description">
+      2つの天体の位置からミッドポイントを計算します。
+    </p>
+
+    <section class="input-section">
+      <h2>天体A</h2>
+
+      <label for="planetA">天体</label>
+      <select id="planetA">
+        <option value="">選択してください</option>
+        <option value="sun">太陽</option>
+        <option value="moon">月</option>
+        <option value="mercury">水星</option>
+        <option value="venus">金星</option>
+        <option value="jupiter">木星</option>
+        <option value="saturn">土星</option>
+        <option value="uranus">天王星</option>
+        <option value="neptune">海王星</option>
+        <option value="pluto">冥王星</option>
+      </select>
+
+      <label for="signA">星座</label>
+      <select id="signA">
+        <option value="">選択してください</option>
+        <option value="0">おひつじ座</option>
+        <option value="1">おうし座</option>
+        <option value="2">ふたご座</option>
+        <option value="3">かに座</option>
+        <option value="4">しし座</option>
+        <option value="5">おとめ座</option>
+        <option value="6">てんびん座</option>
+        <option value="7">さそり座</option>
+        <option value="8">いて座</option>
+        <option value="9">やぎ座</option>
+        <option value="10">みずがめ座</option>
+        <option value="11">うお座</option>
+      </select>
+
+      <div class="degree-row">
+        <div>
+          <label for="degreeA">度</label>
+          <input type="number" id="degreeA" min="0" max="29" placeholder="0〜29" />
+        </div>
+
+        <div>
+          <label for="minuteA">分</label>
+          <input type="number" id="minuteA" min="0" max="59" placeholder="0〜59" />
+        </div>
+      </div>
+    </section>
+
+    <section class="input-section">
+      <h2>天体B</h2>
+
+      <label for="planetB">天体</label>
+      <select id="planetB">
+        <option value="">選択してください</option>
+        <option value="sun">太陽</option>
+        <option value="moon">月</option>
+        <option value="mercury">水星</option>
+        <option value="venus">金星</option>
+        <option value="jupiter">木星</option>
+        <option value="saturn">土星</option>
+        <option value="uranus">天王星</option>
+        <option value="neptune">海王星</option>
+        <option value="pluto">冥王星</option>
+      </select>
+
+      <label for="signB">星座</label>
+      <select id="signB">
+        <option value="">選択してください</option>
+        <option value="0">おひつじ座</option>
+        <option value="1">おうし座</option>
+        <option value="2">ふたご座</option>
+        <option value="3">かに座</option>
+        <option value="4">しし座</option>
+        <option value="5">おとめ座</option>
+        <option value="6">てんびん座</option>
+        <option value="7">さそり座</option>
+        <option value="8">いて座</option>
+        <option value="9">やぎ座</option>
+        <option value="10">みずがめ座</option>
+        <option value="11">うお座</option>
+      </select>
+
+      <div class="degree-row">
+        <div>
+          <label for="degreeB">度</label>
+          <input type="number" id="degreeB" min="0" max="29" placeholder="0〜29" />
+        </div>
+
+        <div>
+          <label for="minuteB">分</label>
+          <input type="number" id="minuteB" min="0" max="59" placeholder="0〜59" />
+        </div>
+      </div>
+    </section>
+
+    <button id="calculateButton">ミッドポイントを計算</button>
+
+    <section class="result-section">
+      <h2>計算結果</h2>
+      <p id="planetAResult">天体A：-</p>
+      <p id="planetBResult">天体B：-</p>
+      <p id="midpointResult">ミッドポイント：-</p>
+    </section>
+
+    <p id="errorMessage" class="error-message"></p>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
