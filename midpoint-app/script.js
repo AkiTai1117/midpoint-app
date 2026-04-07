@@ -7,7 +7,10 @@ const planetNames = {
   saturn: "土星",
   uranus: "天王星",
   neptune: "海王星",
-  pluto: "冥王星"
+  pluto: "冥王星",
+  asc: "アセンダント",
+  mc: "MC",
+  node: "ノード"
 };
 
 const signNames = [
