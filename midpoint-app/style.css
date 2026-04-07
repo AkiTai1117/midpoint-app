@@ -14,6 +14,7 @@
   --shadow: 0 10px 24px rgba(74, 44, 109, 0.10);
   --error: #c62828;
   --result-accent: #9a6a00;
+  --success: #2e7d32;
 }
 
 body {
@@ -73,7 +74,7 @@ h1 {
 
 .input-section h2,
 .result-section h2 {
-  margin: 0 0 14px;
+  margin: 0;
   font-size: 1.15rem;
   color: var(--primary-dark);
 }
@@ -171,6 +172,30 @@ button {
   border: 1px solid #f0ddb2;
 }
 
+.result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.copy-button {
+  width: auto;
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--primary-dark);
+  border: 1px solid #e2d4f3;
+  box-shadow: 0 4px 10px rgba(74, 44, 109, 0.08);
+  font-size: 0.9rem;
+}
+
+.copy-button:active {
+  transform: translateY(1px) scale(0.99);
+}
+
 .result-section p {
   margin: 10px 0;
   font-size: 1rem;
@@ -185,6 +210,14 @@ button {
   font-size: 1.12rem;
   font-weight: bold;
   color: var(--result-accent);
+}
+
+.copy-message {
+  min-height: 1.4em;
+  margin: 10px 0 0;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: var(--success);
 }
 
 .error-message {
@@ -210,5 +243,14 @@ button {
   .degree-row {
     flex-direction: column;
     gap: 0;
+  }
+
+  .result-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .copy-button {
+    width: 100%;
   }
 }

@@ -116,10 +116,14 @@
     </div>
 
     <section class="result-section">
-      <h2>計算結果</h2>
+      <div class="result-header">
+        <h2>計算結果</h2>
+        <button id="copyResultButton" type="button" class="copy-button">結果をコピー</button>
+      </div>
       <p id="planetAResult">天体A：-</p>
       <p id="planetBResult">天体B：-</p>
       <p id="midpointResult">ミッドポイント：-</p>
+      <p id="copyMessage" class="copy-message"></p>
     </section>
 
     <p id="errorMessage" class="error-message"></p>

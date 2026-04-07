@@ -25,11 +25,14 @@ const signNames = [
   "うお座"
 ];
 
-const STORAGE_KEY = "midpointAppFormData";
+const FORM_STORAGE_KEY = "midpointAppFormData";
+const RESULT_STORAGE_KEY = "midpointAppResultData";
 
 const calculateButton = document.getElementById("calculateButton");
 const resetButton = document.getElementById("resetButton");
+const copyResultButton = document.getElementById("copyResultButton");
 const errorMessage = document.getElementById("errorMessage");
+const copyMessage = document.getElementById("copyMessage");
 
 const planetAResult = document.getElementById("planetAResult");
 const planetBResult = document.getElementById("planetBResult");
@@ -48,6 +51,7 @@ const formElementIds = [
 
 calculateButton.addEventListener("click", () => {
   clearError();
+  clearCopyMessage();
 
   const inputA = getPlanetInput("A");
   const inputB = getPlanetInput("B");
@@ -56,6 +60,7 @@ calculateButton.addEventListener("click", () => {
   if (validationError) {
     showError(validationError);
     clearResults();
+    clearSavedResultData();
     return;
   }
 
@@ -67,28 +72,53 @@ calculateButton.addEventListener("click", () => {
   if (Math.abs(diff - 180) < 0.000001) {
     showError("2点が正反対（180度）のためミッドポイントが一意に定まりません");
     clearResults();
+    clearSavedResultData();
     return;
   }
 
   const midpointLongitude = calculateMidpoint(longitudeA, longitudeB);
   const midpointPosition = longitudeToSignDegreeMinute(midpointLongitude);
 
-  planetAResult.textContent =
-    `${planetNames[inputA.planet]}：${formatPosition(inputA.sign, inputA.degree, inputA.minute)}`;
+  const resultData = {
+    planetAText: `${planetNames[inputA.planet]}：${formatPosition(inputA.sign, inputA.degree, inputA.minute)}`,
+    planetBText: `${planetNames[inputB.planet]}：${formatPosition(inputB.sign, inputB.degree, inputB.minute)}`,
+    midpointText: `ミッドポイント：${midpointPosition.signName} ${midpointPosition.degree}度 ${pad2(midpointPosition.minute)}分`
+  };
 
-  planetBResult.textContent =
-    `${planetNames[inputB.planet]}：${formatPosition(inputB.sign, inputB.degree, inputB.minute)}`;
-
-  midpointResult.textContent =
-    `ミッドポイント：${midpointPosition.signName} ${midpointPosition.degree}度 ${pad2(midpointPosition.minute)}分`;
+  renderResults(resultData);
+  saveResultData(resultData);
 });
 
 resetButton.addEventListener("click", () => {
   resetForm();
 });
 
+copyResultButton.addEventListener("click", async () => {
+  clearCopyMessage();
+
+  if (midpointResult.textContent === "ミッドポイント：-") {
+    copyMessage.textContent = "コピーできる計算結果がありません";
+    return;
+  }
+
+  const textToCopy = [
+    planetAResult.textContent,
+    planetBResult.textContent,
+    midpointResult.textContent
+  ].join("\n");
+
+  try {
+    await navigator.clipboard.writeText(textToCopy);
+    copyMessage.textContent = "計算結果をコピーしました";
+  } catch (error) {
+    copyMessage.textContent = "コピーに失敗しました";
+    console.error("コピーに失敗しました:", error);
+  }
+});
+
 document.addEventListener("DOMContentLoaded", () => {
   restoreFormData();
+  restoreResultData();
   attachAutoSave();
 });
 
@@ -217,10 +247,24 @@ function clearError() {
   errorMessage.textContent = "";
 }
 
+function showCopyMessage(message) {
+  copyMessage.textContent = message;
+}
+
+function clearCopyMessage() {
+  copyMessage.textContent = "";
+}
+
 function clearResults() {
   planetAResult.textContent = "天体A：-";
   planetBResult.textContent = "天体B：-";
   midpointResult.textContent = "ミッドポイント：-";
+}
+
+function renderResults(resultData) {
+  planetAResult.textContent = resultData.planetAText;
+  planetBResult.textContent = resultData.planetBText;
+  midpointResult.textContent = resultData.midpointText;
 }
 
 function attachAutoSave() {
@@ -242,11 +286,11 @@ function saveFormData() {
     formData[id] = element.value;
   });
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+  localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(formData));
 }
 
 function restoreFormData() {
-  const savedData = localStorage.getItem(STORAGE_KEY);
+  const savedData = localStorage.getItem(FORM_STORAGE_KEY);
   if (!savedData) return;
 
   try {
@@ -265,6 +309,33 @@ function restoreFormData() {
   }
 }
 
+function saveResultData(resultData) {
+  localStorage.setItem(RESULT_STORAGE_KEY, JSON.stringify(resultData));
+}
+
+function restoreResultData() {
+  const savedData = localStorage.getItem(RESULT_STORAGE_KEY);
+  if (!savedData) return;
+
+  try {
+    const resultData = JSON.parse(savedData);
+
+    if (
+      typeof resultData.planetAText === "string" &&
+      typeof resultData.planetBText === "string" &&
+      typeof resultData.midpointText === "string"
+    ) {
+      renderResults(resultData);
+    }
+  } catch (error) {
+    console.error("結果データの復元に失敗しました:", error);
+  }
+}
+
+function clearSavedResultData() {
+  localStorage.removeItem(RESULT_STORAGE_KEY);
+}
+
 function resetForm() {
   formElementIds.forEach((id) => {
     const element = document.getElementById(id);
@@ -272,7 +343,9 @@ function resetForm() {
     element.value = "";
   });
 
-  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(FORM_STORAGE_KEY);
+  clearSavedResultData();
   clearError();
+  clearCopyMessage();
   clearResults();
 }
