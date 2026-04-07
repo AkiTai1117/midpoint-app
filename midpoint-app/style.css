@@ -221,7 +221,7 @@ button {
 }
 
 .error-message {
-  min-height: 1.6em;
+  display: none;
   margin-top: 14px;
   padding: 10px 12px;
   border-radius: 12px;
@@ -229,6 +229,11 @@ button {
   text-align: center;
   color: var(--error);
   background: rgba(198, 40, 40, 0.08);
+  border: 1px solid rgba(198, 40, 40, 0.18);
+}
+
+.error-message.is-visible {
+  display: block;
 }
 
 @media (max-width: 360px) {

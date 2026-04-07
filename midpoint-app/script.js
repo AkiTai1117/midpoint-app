@@ -241,10 +241,12 @@ function pad2(value) {
 
 function showError(message) {
   errorMessage.textContent = message;
+  errorMessage.classList.add("is-visible");
 }
 
 function clearError() {
   errorMessage.textContent = "";
+  errorMessage.classList.remove("is-visible");
 }
 
 function showCopyMessage(message) {
