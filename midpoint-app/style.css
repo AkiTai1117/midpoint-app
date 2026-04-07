@@ -115,30 +115,54 @@ input[type="number"]:focus {
   flex: 1;
 }
 
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
 button {
   display: block;
   width: 100%;
   min-height: 52px;
-  margin-top: 8px;
   border: none;
   border-radius: 14px;
   padding: 14px 18px;
   font-size: 1rem;
   font-weight: bold;
-  background: linear-gradient(135deg, #8b5dc3 0%, #6f46a5 100%);
-  color: #fff;
   cursor: pointer;
-  box-shadow: 0 10px 22px rgba(111, 70, 165, 0.28);
   transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
 }
 
-button:hover {
+#calculateButton {
+  background: linear-gradient(135deg, #8b5dc3 0%, #6f46a5 100%);
+  color: #fff;
+  box-shadow: 0 10px 22px rgba(111, 70, 165, 0.28);
+}
+
+#calculateButton:hover {
   opacity: 0.97;
 }
 
-button:active {
+#calculateButton:active {
   transform: translateY(1px) scale(0.99);
   box-shadow: 0 6px 14px rgba(111, 70, 165, 0.24);
+}
+
+.secondary-button {
+  background: #ffffff;
+  color: var(--primary-dark);
+  border: 1px solid var(--border);
+  box-shadow: 0 6px 14px rgba(74, 44, 109, 0.08);
+}
+
+.secondary-button:hover {
+  background: #faf7ff;
+}
+
+.secondary-button:active {
+  transform: translateY(1px) scale(0.99);
 }
 
 .result-section {

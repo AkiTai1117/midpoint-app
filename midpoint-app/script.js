@@ -28,6 +28,7 @@ const signNames = [
 const STORAGE_KEY = "midpointAppFormData";
 
 const calculateButton = document.getElementById("calculateButton");
+const resetButton = document.getElementById("resetButton");
 const errorMessage = document.getElementById("errorMessage");
 
 const planetAResult = document.getElementById("planetAResult");
@@ -80,6 +81,10 @@ calculateButton.addEventListener("click", () => {
 
   midpointResult.textContent =
     `ミッドポイント：${midpointPosition.signName} ${midpointPosition.degree}度 ${pad2(midpointPosition.minute)}分`;
+});
+
+resetButton.addEventListener("click", () => {
+  resetForm();
 });
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -258,4 +263,16 @@ function restoreFormData() {
   } catch (error) {
     console.error("保存データの復元に失敗しました:", error);
   }
+}
+
+function resetForm() {
+  formElementIds.forEach((id) => {
+    const element = document.getElementById(id);
+    if (!element) return;
+    element.value = "";
+  });
+
+  localStorage.removeItem(STORAGE_KEY);
+  clearError();
+  clearResults();
 }
