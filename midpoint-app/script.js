@@ -28,6 +28,8 @@ const signNames = [
   "うお座"
 ];
 
+const modalityNames = ["活動宮", "不動宮", "柔軟宮"];
+
 const FORM_STORAGE_KEY = "midpointAppFormData";
 const RESULT_STORAGE_KEY = "midpointAppResultData";
 
@@ -40,6 +42,7 @@ const copyMessage = document.getElementById("copyMessage");
 const planetAResult = document.getElementById("planetAResult");
 const planetBResult = document.getElementById("planetBResult");
 const midpointResult = document.getElementById("midpointResult");
+const sort45Result = document.getElementById("sort45Result");
 
 const formElementIds = [
   "planetA",
@@ -80,12 +83,16 @@ calculateButton.addEventListener("click", () => {
   }
 
   const midpointLongitude = calculateMidpoint(longitudeA, longitudeB);
-  const midpointPosition = longitudeToSignDegreeMinute(midpointLongitude);
+  const midpointPosition = longitudeToPosition(midpointLongitude);
+
+  const sort45Longitude = midpointLongitude + 45;
+  const sort45Position = longitudeToPosition(sort45Longitude);
 
   const resultData = {
     planetAText: `${planetNames[inputA.planet]}：${formatPosition(inputA.sign, inputA.degree, inputA.minute)}`,
     planetBText: `${planetNames[inputB.planet]}：${formatPosition(inputB.sign, inputB.degree, inputB.minute)}`,
-    midpointText: `ミッドポイント：${midpointPosition.signName} ${midpointPosition.degree}度 ${pad2(midpointPosition.minute)}分`
+    midpointText: `ミッドポイント：${midpointPosition.signName} ${midpointPosition.degree}度 ${pad2(midpointPosition.minute)}分（${midpointPosition.modalityName}）`,
+    sort45Text: `45度ソート：${sort45Position.modalityName}の${sort45Position.degree}度 ${pad2(sort45Position.minute)}分`
   };
 
   renderResults(resultData);
@@ -107,7 +114,8 @@ copyResultButton.addEventListener("click", async () => {
   const textToCopy = [
     planetAResult.textContent,
     planetBResult.textContent,
-    midpointResult.textContent
+    midpointResult.textContent,
+    sort45Result.textContent
   ].join("\n");
 
   try {
@@ -146,7 +154,7 @@ function validateInputs(inputA, inputB) {
   }
 
   if (inputA.planet === inputB.planet) {
-    return "同じ天体は選択できません";
+    return "同じ対象は選択できません";
   }
 
   const degreeA = Number(inputA.degree);
@@ -204,10 +212,10 @@ function calculateMidpoint(longitude1, longitude2) {
   return midpoint;
 }
 
-function longitudeToSignDegreeMinute(longitude) {
+function longitudeToPosition(longitude) {
   const normalized = ((longitude % 360) + 360) % 360;
 
-  const signIndex = Math.floor(normalized / 30);
+  let signIndex = Math.floor(normalized / 30);
   const signDegreeFloat = normalized % 30;
 
   let degree = Math.floor(signDegreeFloat);
@@ -220,18 +228,20 @@ function longitudeToSignDegreeMinute(longitude) {
 
   if (degree === 30) {
     degree = 0;
-    return {
-      signName: signNames[(signIndex + 1) % 12],
-      degree,
-      minute
-    };
+    signIndex = (signIndex + 1) % 12;
   }
 
   return {
+    signIndex,
     signName: signNames[signIndex],
+    modalityName: getModalityName(signIndex),
     degree,
     minute
   };
+}
+
+function getModalityName(signIndex) {
+  return modalityNames[signIndex % 3];
 }
 
 function formatPosition(sign, degree, minute) {
@@ -252,10 +262,6 @@ function clearError() {
   errorMessage.classList.remove("is-visible");
 }
 
-function showCopyMessage(message) {
-  copyMessage.textContent = message;
-}
-
 function clearCopyMessage() {
   copyMessage.textContent = "";
 }
@@ -264,12 +270,14 @@ function clearResults() {
   planetAResult.textContent = "天体A：-";
   planetBResult.textContent = "天体B：-";
   midpointResult.textContent = "ミッドポイント：-";
+  sort45Result.textContent = "45度ソート：-";
 }
 
 function renderResults(resultData) {
   planetAResult.textContent = resultData.planetAText;
   planetBResult.textContent = resultData.planetBText;
   midpointResult.textContent = resultData.midpointText;
+  sort45Result.textContent = resultData.sort45Text;
 }
 
 function attachAutoSave() {
@@ -328,7 +336,8 @@ function restoreResultData() {
     if (
       typeof resultData.planetAText === "string" &&
       typeof resultData.planetBText === "string" &&
-      typeof resultData.midpointText === "string"
+      typeof resultData.midpointText === "string" &&
+      typeof resultData.sort45Text === "string"
     ) {
       renderResults(resultData);
     }

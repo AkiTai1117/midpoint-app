@@ -212,6 +212,13 @@ button {
   color: var(--result-accent);
 }
 
+#sort45Result {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(230, 201, 126, 0.5);
+}
+
 .copy-message {
   min-height: 1.4em;
   margin: 10px 0 0;
