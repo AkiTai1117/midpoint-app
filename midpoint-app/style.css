@@ -319,6 +319,11 @@ button {
   margin: 8px 0;
 }
 
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 @media (max-width: 360px) {
   .container {
     padding: 18px 12px 36px;

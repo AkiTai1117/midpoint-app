@@ -74,6 +74,8 @@ const chartTargetB = document.getElementById("chartTargetB");
 const chartTargetADisplay = document.getElementById("chartTargetADisplay");
 const chartTargetBDisplay = document.getElementById("chartTargetBDisplay");
 
+const NATAL_CHART_API_URL = "http://localhost:8000/natal-chart.php";
+
 let fetchedChartData = null;
 
 calculateButton.addEventListener("click", () => {
@@ -135,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 fetchChartButton.addEventListener("click", () => {
-  handleFetchChartMock();
+  handleFetchChart();
 });
 
 chartTargetA.addEventListener("change", updateChartTargetDisplays);
@@ -405,7 +407,7 @@ function resetForm() {
   clearResults();
 }
 
-function handleFetchChartMock() {
+async function handleFetchChart() {
   clearChartError();
   hideChartLoading();
 
@@ -425,35 +427,69 @@ function handleFetchChartMock() {
   }
 
   showChartLoading("星周りを計算しています...");
+  fetchChartButton.disabled = true;
 
-  setTimeout(() => {
-    hideChartLoading();
+  try {
+    const response = await fetch(NATAL_CHART_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        birthDate: birthDate.value,
+        birthTime: birthTime.value,
+        birthPlace: birthPlace.value.trim()
+      })
+    });
 
-    fetchedChartData = {
-      sun: { label: "太陽", sign: "やぎ座", signIndex: 9, degree: 13, minute: 20, longitude: 283.3333 },
-      moon: { label: "月", sign: "しし座", signIndex: 4, degree: 15, minute: 5, longitude: 135.0833 },
-      mercury: { label: "水星", sign: "みずがめ座", signIndex: 10, degree: 2, minute: 41, longitude: 302.6833 },
-      venus: { label: "金星", sign: "いて座", signIndex: 8, degree: 29, minute: 11, longitude: 269.1833 },
-      jupiter: { label: "木星", sign: "うお座", signIndex: 11, degree: 4, minute: 50, longitude: 334.8333 },
-      saturn: { label: "土星", sign: "おうし座", signIndex: 1, degree: 10, minute: 3, longitude: 40.05 },
-      uranus: { label: "天王星", sign: "みずがめ座", signIndex: 10, degree: 12, minute: 44, longitude: 312.7333 },
-      neptune: { label: "海王星", sign: "みずがめ座", signIndex: 10, degree: 1, minute: 8, longitude: 301.1333 },
-      pluto: { label: "冥王星", sign: "いて座", signIndex: 8, degree: 9, minute: 55, longitude: 249.9167 },
-      asc: { label: "アセンダント", sign: "おひつじ座", signIndex: 0, degree: 18, minute: 12, longitude: 18.2 },
-      mc: { label: "MC", sign: "やぎ座", signIndex: 9, degree: 6, minute: 30, longitude: 276.5 },
-      node: { label: "ノード", sign: "ふたご座", signIndex: 2, degree: 22, minute: 10, longitude: 82.1667 }
-    };
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      const message = result?.error?.message || "星周りの取得に失敗しました";
+      showChartError(message);
+      fetchedChartData = null;
+      resetChartSelectionUI();
+      return;
+    }
+
+    fetchedChartData = result.data;
 
     renderChartResultList(fetchedChartData);
     populateChartTargetSelects(fetchedChartData);
     updateChartTargetDisplays();
-  }, 700);
+  } catch (error) {
+    console.error("API通信に失敗しました:", error);
+    showChartError("APIとの通信に失敗しました");
+    fetchedChartData = null;
+    resetChartSelectionUI();
+  } finally {
+    hideChartLoading();
+    fetchChartButton.disabled = false;
+  }
 }
 
 function renderChartResultList(chartData) {
   chartResultList.innerHTML = "";
 
-  Object.values(chartData).forEach((item) => {
+  const displayOrder = [
+    "sun",
+    "moon",
+    "mercury",
+    "venus",
+    "jupiter",
+    "saturn",
+    "uranus",
+    "neptune",
+    "pluto",
+    "asc",
+    "mc",
+    "node"
+  ];
+
+  displayOrder.forEach((key) => {
+    const item = chartData[key];
+    if (!item) return;
+
     const li = document.createElement("li");
     li.textContent = `${item.label}：${item.sign} ${item.degree}度 ${pad2(item.minute)}分`;
     chartResultList.appendChild(li);
@@ -462,11 +498,28 @@ function renderChartResultList(chartData) {
 
 function populateChartTargetSelects(chartData) {
   const defaultOptionText = "選択してください";
+  const displayOrder = [
+    "sun",
+    "moon",
+    "mercury",
+    "venus",
+    "jupiter",
+    "saturn",
+    "uranus",
+    "neptune",
+    "pluto",
+    "asc",
+    "mc",
+    "node"
+  ];
 
   chartTargetA.innerHTML = `<option value="">${defaultOptionText}</option>`;
   chartTargetB.innerHTML = `<option value="">${defaultOptionText}</option>`;
 
-  Object.entries(chartData).forEach(([key, item]) => {
+  displayOrder.forEach((key) => {
+    const item = chartData[key];
+    if (!item) return;
+
     const optionA = document.createElement("option");
     optionA.value = key;
     optionA.textContent = item.label;
@@ -590,4 +643,14 @@ function showChartError(message) {
 function clearChartError() {
   chartErrorMessage.textContent = "";
   chartErrorMessage.classList.remove("is-visible");
+}
+
+function resetChartSelectionUI() {
+  chartResultList.innerHTML = "<li>まだ星周りは取得されていません</li>";
+
+  chartTargetA.innerHTML = '<option value="">先に星周りを取得してください</option>';
+  chartTargetB.innerHTML = '<option value="">先に星周りを取得してください</option>';
+
+  chartTargetADisplay.textContent = "対象A：-";
+  chartTargetBDisplay.textContent = "対象B：-";
 }
