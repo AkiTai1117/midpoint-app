@@ -126,13 +126,29 @@
         <h2>計算結果</h2>
         <button id="copyResultButton" type="button" class="copy-button">結果をコピー</button>
       </div>
+
       <p id="planetAResult">天体A：-</p>
       <p id="planetBResult">天体B：-</p>
       <p id="midpointResult">ミッドポイント：-</p>
       <p id="sort45Result">45度ソート：-</p>
+
+      <details class="detail-box">
+        <summary>90度ソートの4候補を見る</summary>
+        <ul id="sort90List" class="candidate-list">
+          <li>-</li>
+        </ul>
+      </details>
+
+      <details class="detail-box">
+        <summary>45度ソートの4候補を見る</summary>
+        <ul id="sort45List" class="candidate-list">
+          <li>-</li>
+        </ul>
+      </details>
+
       <p id="copyMessage" class="copy-message"></p>
     </section>
-
+    
     <p id="errorMessage" class="error-message"></p>
   </main>
 

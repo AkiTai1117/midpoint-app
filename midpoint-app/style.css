@@ -219,6 +219,45 @@ button {
   border: 1px solid rgba(230, 201, 126, 0.5);
 }
 
+.detail-box {
+  margin-top: 14px;
+  border: 1px solid rgba(230, 201, 126, 0.6);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.6);
+  overflow: hidden;
+}
+
+.detail-box summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 12px 14px;
+  font-weight: bold;
+  color: var(--primary-dark);
+}
+
+.detail-box summary::-webkit-details-marker {
+  display: none;
+}
+
+.detail-box summary::after {
+  content: "＋";
+  float: right;
+  font-weight: bold;
+}
+
+.detail-box[open] summary::after {
+  content: "－";
+}
+
+.candidate-list {
+  margin: 0;
+  padding: 0 14px 14px 32px;
+}
+
+.candidate-list li {
+  margin: 8px 0;
+}
+
 .copy-message {
   min-height: 1.4em;
   margin: 10px 0 0;

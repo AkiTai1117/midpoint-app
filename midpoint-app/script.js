@@ -44,6 +44,9 @@ const planetBResult = document.getElementById("planetBResult");
 const midpointResult = document.getElementById("midpointResult");
 const sort45Result = document.getElementById("sort45Result");
 
+const sort90List = document.getElementById("sort90List");
+const sort45List = document.getElementById("sort45List");
+
 const formElementIds = [
   "planetA",
   "signA",
@@ -85,14 +88,19 @@ calculateButton.addEventListener("click", () => {
   const midpointLongitude = calculateMidpoint(longitudeA, longitudeB);
   const midpointPosition = longitudeToPosition(midpointLongitude);
 
-  const sort45Longitude = midpointLongitude + 45;
-  const sort45Position = longitudeToPosition(sort45Longitude);
+  const sort45BaseLongitude = midpointLongitude + 45;
+  const sort45BasePosition = longitudeToPosition(sort45BaseLongitude);
+
+  const sort90Candidates = buildFourCandidates(midpointLongitude);
+  const sort45Candidates = buildFourCandidates(sort45BaseLongitude);
 
   const resultData = {
     planetAText: `${planetNames[inputA.planet]}：${formatPosition(inputA.sign, inputA.degree, inputA.minute)}`,
     planetBText: `${planetNames[inputB.planet]}：${formatPosition(inputB.sign, inputB.degree, inputB.minute)}`,
     midpointText: `ミッドポイント：${midpointPosition.signName} ${midpointPosition.degree}度 ${pad2(midpointPosition.minute)}分（${midpointPosition.modalityName}）`,
-    sort45Text: `45度ソート：${sort45Position.modalityName}の${sort45Position.degree}度 ${pad2(sort45Position.minute)}分`
+    sort45Text: `45度ソート：${sort45BasePosition.modalityName}の${sort45BasePosition.degree}度 ${pad2(sort45BasePosition.minute)}分`,
+    sort90Candidates,
+    sort45Candidates
   };
 
   renderResults(resultData);
@@ -111,11 +119,18 @@ copyResultButton.addEventListener("click", async () => {
     return;
   }
 
+  const sort90Texts = getCandidateTexts(sort90List);
+  const sort45Texts = getCandidateTexts(sort45List);
+
   const textToCopy = [
     planetAResult.textContent,
     planetBResult.textContent,
     midpointResult.textContent,
-    sort45Result.textContent
+    sort45Result.textContent,
+    "90度ソート4候補：",
+    ...sort90Texts.map(text => `- ${text}`),
+    "45度ソート4候補：",
+    ...sort45Texts.map(text => `- ${text}`)
   ].join("\n");
 
   try {
@@ -244,6 +259,29 @@ function getModalityName(signIndex) {
   return modalityNames[signIndex % 3];
 }
 
+function buildFourCandidates(baseLongitude) {
+  const offsets = [0, 90, 180, 270];
+
+  return offsets.map((offset) => {
+    const position = longitudeToPosition(baseLongitude + offset);
+    return `${position.signName} ${position.degree}度 ${pad2(position.minute)}分`;
+  });
+}
+
+function renderCandidateList(listElement, candidates) {
+  listElement.innerHTML = "";
+
+  candidates.forEach((candidate) => {
+    const li = document.createElement("li");
+    li.textContent = candidate;
+    listElement.appendChild(li);
+  });
+}
+
+function getCandidateTexts(listElement) {
+  return Array.from(listElement.querySelectorAll("li")).map(li => li.textContent);
+}
+
 function formatPosition(sign, degree, minute) {
   return `${signNames[Number(sign)]} ${Number(degree)}度 ${pad2(Number(minute))}分`;
 }
@@ -271,6 +309,8 @@ function clearResults() {
   planetBResult.textContent = "天体B：-";
   midpointResult.textContent = "ミッドポイント：-";
   sort45Result.textContent = "45度ソート：-";
+  sort90List.innerHTML = "<li>-</li>";
+  sort45List.innerHTML = "<li>-</li>";
 }
 
 function renderResults(resultData) {
@@ -278,6 +318,8 @@ function renderResults(resultData) {
   planetBResult.textContent = resultData.planetBText;
   midpointResult.textContent = resultData.midpointText;
   sort45Result.textContent = resultData.sort45Text;
+  renderCandidateList(sort90List, resultData.sort90Candidates);
+  renderCandidateList(sort45List, resultData.sort45Candidates);
 }
 
 function attachAutoSave() {
@@ -337,7 +379,9 @@ function restoreResultData() {
       typeof resultData.planetAText === "string" &&
       typeof resultData.planetBText === "string" &&
       typeof resultData.midpointText === "string" &&
-      typeof resultData.sort45Text === "string"
+      typeof resultData.sort45Text === "string" &&
+      Array.isArray(resultData.sort90Candidates) &&
+      Array.isArray(resultData.sort45Candidates)
     ) {
       renderResults(resultData);
     }
