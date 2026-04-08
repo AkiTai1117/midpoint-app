@@ -58,14 +58,31 @@ const formElementIds = [
   "minuteB"
 ];
 
-calculateButton.addEventListener("click", () => {
-  clearError();
-  clearCopyMessage();
+const fetchChartButton = document.getElementById("fetchChartButton");
+const calculateFromChartButton = document.getElementById("calculateFromChartButton");
 
+const birthDate = document.getElementById("birthDate");
+const birthTime = document.getElementById("birthTime");
+const birthPlace = document.getElementById("birthPlace");
+
+const chartLoadingMessage = document.getElementById("chartLoadingMessage");
+const chartErrorMessage = document.getElementById("chartErrorMessage");
+
+const chartResultList = document.getElementById("chartResultList");
+const chartTargetA = document.getElementById("chartTargetA");
+const chartTargetB = document.getElementById("chartTargetB");
+const chartTargetADisplay = document.getElementById("chartTargetADisplay");
+const chartTargetBDisplay = document.getElementById("chartTargetBDisplay");
+
+let fetchedChartData = null;
+
+calculateButton.addEventListener("click", () => {
   const inputA = getPlanetInput("A");
   const inputB = getPlanetInput("B");
 
   const validationError = validateInputs(inputA, inputB);
+  clearError();
+
   if (validationError) {
     showError(validationError);
     clearResults();
@@ -73,38 +90,7 @@ calculateButton.addEventListener("click", () => {
     return;
   }
 
-  const longitudeA = toLongitude(inputA.sign, inputA.degree, inputA.minute);
-  const longitudeB = toLongitude(inputB.sign, inputB.degree, inputB.minute);
-
-  const diff = getAngleDifference(longitudeA, longitudeB);
-
-  if (Math.abs(diff - 180) < 0.000001) {
-    showError("2点が正反対（180度）のためミッドポイントが一意に定まりません");
-    clearResults();
-    clearSavedResultData();
-    return;
-  }
-
-  const midpointLongitude = calculateMidpoint(longitudeA, longitudeB);
-  const midpointPosition = longitudeToPosition(midpointLongitude);
-
-  const sort45BaseLongitude = midpointLongitude + 45;
-  const sort45BasePosition = longitudeToPosition(sort45BaseLongitude);
-
-  const sort90Candidates = buildFourCandidates(midpointLongitude);
-  const sort45Candidates = buildFourCandidates(sort45BaseLongitude);
-
-  const resultData = {
-    planetAText: `${planetNames[inputA.planet]}：${formatPosition(inputA.sign, inputA.degree, inputA.minute)}`,
-    planetBText: `${planetNames[inputB.planet]}：${formatPosition(inputB.sign, inputB.degree, inputB.minute)}`,
-    midpointText: `ミッドポイント：${midpointPosition.signName} ${midpointPosition.degree}度 ${pad2(midpointPosition.minute)}分（${midpointPosition.modalityName}）`,
-    sort45Text: `45度ソート：${sort45BasePosition.modalityName}の${sort45BasePosition.degree}度 ${pad2(sort45BasePosition.minute)}分`,
-    sort90Candidates,
-    sort45Candidates
-  };
-
-  renderResults(resultData);
-  saveResultData(resultData);
+  calculateMidpointFromInputs(inputA, inputB);
 });
 
 resetButton.addEventListener("click", () => {
@@ -146,6 +132,17 @@ document.addEventListener("DOMContentLoaded", () => {
   restoreFormData();
   restoreResultData();
   attachAutoSave();
+});
+
+fetchChartButton.addEventListener("click", () => {
+  handleFetchChartMock();
+});
+
+chartTargetA.addEventListener("change", updateChartTargetDisplays);
+chartTargetB.addEventListener("change", updateChartTargetDisplays);
+
+calculateFromChartButton.addEventListener("click", () => {
+  handleCalculateFromChart();
 });
 
 function getPlanetInput(suffix) {
@@ -406,4 +403,191 @@ function resetForm() {
   clearError();
   clearCopyMessage();
   clearResults();
+}
+
+function handleFetchChartMock() {
+  clearChartError();
+  hideChartLoading();
+
+  if (!birthDate.value) {
+    showChartError("生年月日を入力してください");
+    return;
+  }
+
+  if (!birthTime.value) {
+    showChartError("出生時刻を入力してください");
+    return;
+  }
+
+  if (!birthPlace.value.trim()) {
+    showChartError("出生地を入力してください");
+    return;
+  }
+
+  showChartLoading("星周りを計算しています...");
+
+  setTimeout(() => {
+    hideChartLoading();
+
+    fetchedChartData = {
+      sun: { label: "太陽", sign: "やぎ座", signIndex: 9, degree: 13, minute: 20, longitude: 283.3333 },
+      moon: { label: "月", sign: "しし座", signIndex: 4, degree: 15, minute: 5, longitude: 135.0833 },
+      mercury: { label: "水星", sign: "みずがめ座", signIndex: 10, degree: 2, minute: 41, longitude: 302.6833 },
+      venus: { label: "金星", sign: "いて座", signIndex: 8, degree: 29, minute: 11, longitude: 269.1833 },
+      jupiter: { label: "木星", sign: "うお座", signIndex: 11, degree: 4, minute: 50, longitude: 334.8333 },
+      saturn: { label: "土星", sign: "おうし座", signIndex: 1, degree: 10, minute: 3, longitude: 40.05 },
+      uranus: { label: "天王星", sign: "みずがめ座", signIndex: 10, degree: 12, minute: 44, longitude: 312.7333 },
+      neptune: { label: "海王星", sign: "みずがめ座", signIndex: 10, degree: 1, minute: 8, longitude: 301.1333 },
+      pluto: { label: "冥王星", sign: "いて座", signIndex: 8, degree: 9, minute: 55, longitude: 249.9167 },
+      asc: { label: "アセンダント", sign: "おひつじ座", signIndex: 0, degree: 18, minute: 12, longitude: 18.2 },
+      mc: { label: "MC", sign: "やぎ座", signIndex: 9, degree: 6, minute: 30, longitude: 276.5 },
+      node: { label: "ノード", sign: "ふたご座", signIndex: 2, degree: 22, minute: 10, longitude: 82.1667 }
+    };
+
+    renderChartResultList(fetchedChartData);
+    populateChartTargetSelects(fetchedChartData);
+    updateChartTargetDisplays();
+  }, 700);
+}
+
+function renderChartResultList(chartData) {
+  chartResultList.innerHTML = "";
+
+  Object.values(chartData).forEach((item) => {
+    const li = document.createElement("li");
+    li.textContent = `${item.label}：${item.sign} ${item.degree}度 ${pad2(item.minute)}分`;
+    chartResultList.appendChild(li);
+  });
+}
+
+function populateChartTargetSelects(chartData) {
+  const defaultOptionText = "選択してください";
+
+  chartTargetA.innerHTML = `<option value="">${defaultOptionText}</option>`;
+  chartTargetB.innerHTML = `<option value="">${defaultOptionText}</option>`;
+
+  Object.entries(chartData).forEach(([key, item]) => {
+    const optionA = document.createElement("option");
+    optionA.value = key;
+    optionA.textContent = item.label;
+    chartTargetA.appendChild(optionA);
+
+    const optionB = document.createElement("option");
+    optionB.value = key;
+    optionB.textContent = item.label;
+    chartTargetB.appendChild(optionB);
+  });
+}
+
+function updateChartTargetDisplays() {
+  chartTargetADisplay.textContent = `対象A：${formatChartTargetDisplay(chartTargetA.value)}`;
+  chartTargetBDisplay.textContent = `対象B：${formatChartTargetDisplay(chartTargetB.value)}`;
+}
+
+function formatChartTargetDisplay(key) {
+  if (!key || !fetchedChartData || !fetchedChartData[key]) {
+    return "-";
+  }
+
+  const item = fetchedChartData[key];
+  return `${item.label}（${item.sign} ${item.degree}度 ${pad2(item.minute)}分）`;
+}
+
+function handleCalculateFromChart() {
+  clearError();
+
+  if (!fetchedChartData) {
+    showError("先に星周りを取得してください");
+    return;
+  }
+
+  const keyA = chartTargetA.value;
+  const keyB = chartTargetB.value;
+
+  if (!keyA || !keyB) {
+    showError("対象Aと対象Bを選択してください");
+    return;
+  }
+
+  if (keyA === keyB) {
+    showError("同じ対象は選択できません");
+    return;
+  }
+
+  const itemA = fetchedChartData[keyA];
+  const itemB = fetchedChartData[keyB];
+
+  const inputA = {
+    planet: keyA,
+    sign: String(itemA.signIndex),
+    degree: String(itemA.degree),
+    minute: String(itemA.minute)
+  };
+
+  const inputB = {
+    planet: keyB,
+    sign: String(itemB.signIndex),
+    degree: String(itemB.degree),
+    minute: String(itemB.minute)
+  };
+
+  calculateMidpointFromInputs(inputA, inputB);
+}
+
+function calculateMidpointFromInputs(inputA, inputB) {
+  clearError();
+  clearCopyMessage();
+
+  const longitudeA = toLongitude(inputA.sign, inputA.degree, inputA.minute);
+  const longitudeB = toLongitude(inputB.sign, inputB.degree, inputB.minute);
+
+  const diff = getAngleDifference(longitudeA, longitudeB);
+
+  if (Math.abs(diff - 180) < 0.000001) {
+    showError("2点が正反対（180度）のためミッドポイントが一意に定まりません");
+    clearResults();
+    clearSavedResultData();
+    return;
+  }
+
+  const midpointLongitude = calculateMidpoint(longitudeA, longitudeB);
+  const midpointPosition = longitudeToPosition(midpointLongitude);
+
+  const sort45BaseLongitude = midpointLongitude + 45;
+  const sort45BasePosition = longitudeToPosition(sort45BaseLongitude);
+
+  const sort90Candidates = buildFourCandidates(midpointLongitude);
+  const sort45Candidates = buildFourCandidates(sort45BaseLongitude);
+
+  const resultData = {
+    planetAText: `${planetNames[inputA.planet]}：${formatPosition(inputA.sign, inputA.degree, inputA.minute)}`,
+    planetBText: `${planetNames[inputB.planet]}：${formatPosition(inputB.sign, inputB.degree, inputB.minute)}`,
+    midpointText: `ミッドポイント：${midpointPosition.signName} ${midpointPosition.degree}度 ${pad2(midpointPosition.minute)}分（${midpointPosition.modalityName}）`,
+    sort45Text: `45度ソート：${sort45BasePosition.modalityName}の${sort45BasePosition.degree}度 ${pad2(sort45BasePosition.minute)}分`,
+    sort90Candidates,
+    sort45Candidates
+  };
+
+  renderResults(resultData);
+  saveResultData(resultData);
+}
+
+function showChartLoading(message) {
+  chartLoadingMessage.textContent = message;
+  chartLoadingMessage.classList.add("is-visible");
+}
+
+function hideChartLoading() {
+  chartLoadingMessage.textContent = "";
+  chartLoadingMessage.classList.remove("is-visible");
+}
+
+function showChartError(message) {
+  chartErrorMessage.textContent = message;
+  chartErrorMessage.classList.add("is-visible");
+}
+
+function clearChartError() {
+  chartErrorMessage.textContent = "";
+  chartErrorMessage.classList.remove("is-visible");
 }

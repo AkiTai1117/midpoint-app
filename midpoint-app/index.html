@@ -16,6 +16,66 @@
       </p>
     </header>
 
+    <!-- 出生図取得セクション -->
+    <section class="input-section">
+      <h2>出生情報から星周りを取得</h2>
+
+      <label for="birthDate">生年月日</label>
+      <input type="date" id="birthDate" />
+
+      <label for="birthTime">出生時刻</label>
+      <input type="time" id="birthTime" />
+
+      <label for="birthPlace">出生地</label>
+      <input
+        type="text"
+        id="birthPlace"
+        placeholder="例：横浜市、東京都、新宿区 など"
+      />
+
+      <div class="button-group">
+        <button id="fetchChartButton" type="button">星周りを取得</button>
+      </div>
+
+      <p id="chartLoadingMessage" class="loading-message"></p>
+      <p id="chartErrorMessage" class="error-message"></p>
+    </section>
+
+    <!-- 星周り一覧 -->
+    <section class="result-section" id="chartResultSection">
+      <h2>取得した星周り</h2>
+      <ul id="chartResultList" class="chart-result-list">
+        <li>まだ星周りは取得されていません</li>
+      </ul>
+    </section>
+
+    <!-- 取得結果から選択 -->
+    <section class="input-section">
+      <h2>取得した星周りから選択</h2>
+
+      <label for="chartTargetA">対象A</label>
+      <select id="chartTargetA">
+        <option value="">先に星周りを取得してください</option>
+      </select>
+
+      <label for="chartTargetB">対象B</label>
+      <select id="chartTargetB">
+        <option value="">先に星周りを取得してください</option>
+      </select>
+
+      <div class="selected-target-box">
+        <p id="chartTargetADisplay">対象A：-</p>
+        <p id="chartTargetBDisplay">対象B：-</p>
+      </div>
+
+      <div class="button-group">
+        <button id="calculateFromChartButton" type="button">
+          選択した2点でミッドポイントを計算
+        </button>
+      </div>
+    </section>
+
+    <!-- 既存の手入力セクション -->
     <section class="input-section">
       <h2>天体A</h2>
 
@@ -148,7 +208,7 @@
 
       <p id="copyMessage" class="copy-message"></p>
     </section>
-    
+
     <p id="errorMessage" class="error-message"></p>
   </main>
 
